@@ -70,14 +70,19 @@
           throw new Error("Invalid feed format: 'items' array not found.");
         }
 	console.log(data);
-        data.items.slice(0,20).forEach(item => {
+	let seen = [];
+        for (const item of data.items) {
+	  if (seen.length >= 20) return;
+	  if (item.summary.indexOf("onlyfan") !== -1) continue;
+          if (seen.includes(item.summary)) continue;
+          seen.push(item.summary);
+
           const div = document.createElement("div");
           div.className = "item";
 
-const d = new Date(item.date_published);
-const opts = { timeZone: "Etc/GMT+5", hour: "numeric", minute: "2-digit", hour12: true };
-const time = d.toLocaleTimeString("en-US", opts);
-const date = d.toLocaleDateString("en-US", { timeZone: "Etc/GMT+5", month: "numeric", day: "numeric", year: "2-digit" });
+          const d = new Date(item.date_published);
+          const time = d.toLocaleTimeString("en-US", { timeZone: "Etc/GMT+5", hour: "numeric", minute: "2-digit", hour12: true });
+          const date = d.toLocaleDateString("en-US", { timeZone: "Etc/GMT+5", month: "numeric", day: "numeric", year: "2-digit" });
 
           div.innerHTML = `
             <a href="${item.url}" target="_blank" rel="noopener noreferrer">${item.title}</a>
@@ -86,7 +91,7 @@ const date = d.toLocaleDateString("en-US", { timeZone: "Etc/GMT+5", month: "nume
             <p>${item.summary || "No description available."}</p>
           `;
           feedContainer.appendChild(div);
-        });
+        };
       })
       .catch(error => {
         feedContainer.innerHTML = `<p style="color: red;">Failed to load feed: ${error.message}</p>`;
